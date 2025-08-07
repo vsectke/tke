@@ -2056,18 +2056,24 @@
       
       async checkAuth() {
         try {
-          const { data: { session } } = await sb.auth.getSession();
-          
-          if (!session) {
-            auth.showOverlay();
-            return;
-          }
+    const { data: { session } } = await sb.auth.getSession();
+    
+    if (!session) {
+      auth.showOverlay();
+      return;
+    }
+    
+    // Gọi function để tạo profile nếu chưa có
+    await sb.rpc('handle_new_user_profile');
+    
+    // Check và auto-approve từ whitelist
+    await sb.rpc('check_and_approve_whitelist');
           
           // User đã login, lấy profile dựa trên user.id
-          const { data: profile, error } = await sb.from('user_profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .single();
+     const { data: profile, error } = await sb.from('user_profiles')
+      .select('*')
+      .eq('id', session.user.id)
+      .single();
           
           if (error || !profile) {
             // Profile chưa tồn tại (trigger sẽ tự tạo)
